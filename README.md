@@ -1,3 +1,5 @@
+# Yadda
+
 Yadda is a programming language that compiles to javascript.
 
 It's made to read like plain English. Here are some examples:
