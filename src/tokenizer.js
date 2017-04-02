@@ -10,9 +10,13 @@ const operators = ['add', 'multiply', 'divide', 'subtract'];
 const keywords = ['and'];
 
 const isWhitespace = char => /\s/.test(char);
+const isAlphanumeric = char => (
+  typeof char === 'string' &&
+  /[a-z0-9]/i.test(char)
+);
 
 module.exports = function tokenizer(input, tokens = []) {
-  const firstChar = input[0];
+  let firstChar = input[0];
 
   // Because this method is recursive, eventually we'll hit the point where
   // input is an empty string. This is our "done" case; just return the tokens.
@@ -31,6 +35,38 @@ module.exports = function tokenizer(input, tokens = []) {
 
     return tokenizer(
       input.slice(1),
+      [...tokens, token]
+    );
+  }
+
+  // Other characters are tricky, though.
+  // We want to build up a 'word' by traveling through until we hit a non-
+  // alphanumeric character.
+  if (isAlphanumeric(firstChar)) {
+    let word = '';
+
+    while(isAlphanumeric(firstChar)) {
+      word += firstChar;
+      input = input.slice(1);
+      firstChar = input[0];
+    }
+
+    let type;
+    if (!isNaN(word)) {
+      word = Number(word);
+      type = 'number';
+    } else if (operators.includes(word)) {
+      type = 'operator';
+    } else if (keywords.includes(word)) {
+      type = 'keyword';
+    } else {
+      throw new Error(`Unrecognized word: ${word}`);
+    }
+
+    const token = { type, value: word };
+
+    return tokenizer(
+      input,
       [...tokens, token]
     );
   }
